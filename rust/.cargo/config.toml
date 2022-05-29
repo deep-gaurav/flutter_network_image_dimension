@@ -1,0 +1,7 @@
+[unstable]
+build-std = [
+    "core",
+    "std",
+    "alloc",
+    "proc_macro"
+]
