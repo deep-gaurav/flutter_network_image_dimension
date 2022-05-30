@@ -7,7 +7,14 @@ import 'package:image_dimension_finder_flutter/bridge_generated.dart';
 
 class ImageDimensionFinderFlutter {
   late ImageDimensionFetcherLibImpl imp;
-  ImageDimensionFinderFlutter() {
+  static final ImageDimensionFinderFlutter _singleton =
+      ImageDimensionFinderFlutter._internal();
+
+  factory ImageDimensionFinderFlutter() {
+    return _singleton;
+  }
+
+  ImageDimensionFinderFlutter._internal() {
     late final lib;
     if (Platform.isAndroid) {
       lib = DynamicLibrary.open("libimage_dimension_fetcher_lib.so");
