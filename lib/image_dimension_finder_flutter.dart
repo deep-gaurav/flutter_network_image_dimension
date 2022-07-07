@@ -10,11 +10,11 @@ final ValueNotifier<ImageDimensionFetcherLibImpl?> _dimensionFetcherLibImpl =
     ValueNotifier(null);
 
 class ImageDimensionFinderFlutter {
-  static final ImageDimensionFinderFlutter _singleton =
-      ImageDimensionFinderFlutter._internal();
+  static ImageDimensionFinderFlutter? _singleton;
 
   factory ImageDimensionFinderFlutter() {
-    return _singleton;
+    _singleton ??= ImageDimensionFinderFlutter._internal();
+    return _singleton!;
   }
 
   Map<String, Completer<ImageDimension>> queue = {};
@@ -46,7 +46,7 @@ class ImageDimensionFinderFlutter {
     });
   }
   Future<ImageDimension> getDim({required String url}) async {
-    if (queue[url] != null) {
+    if (queue[url] == null) {
       queue[url] = Completer();
     }
     return queue[url]!.future;
