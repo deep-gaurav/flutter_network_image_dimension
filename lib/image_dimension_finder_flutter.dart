@@ -17,6 +17,8 @@ class ImageDimensionFinderFlutter {
     return _singleton;
   }
 
+  Map<String, Completer<ImageDimension>> queue = {};
+
   ImageDimensionFinderFlutter._internal() {
     if (_dimensionFetcherLibImpl.value == null) {
       late final DynamicLibrary lib;
@@ -27,9 +29,26 @@ class ImageDimensionFinderFlutter {
       }
       _dimensionFetcherLibImpl.value = ImageDimensionFetcherLibImpl(lib);
     }
+    Timer.run(() async {
+      while (true) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        for (var key in queue.keys) {
+          if (queue[key]?.isCompleted == false) {
+            try {
+              var dim = await _dimensionFetcherLibImpl.value?.getDim(url: key);
+              queue[key]?.complete(dim);
+            } catch (e) {
+              queue[key]?.completeError(e);
+            }
+          }
+        }
+      }
+    });
   }
   Future<ImageDimension> getDim({required String url}) async {
-    var dim = await _dimensionFetcherLibImpl.value!.getDim(url: url);
-    return dim;
+    if (queue[url] != null) {
+      queue[url] = Completer();
+    }
+    return queue[url]!.future;
   }
 }
