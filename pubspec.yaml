@@ -1,6 +1,6 @@
 name: image_dimension_finder_flutter
 description: A new flutter plugin project.
-version: 0.0.1
+version: 0.0.2
 homepage:
 
 environment:
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_rust_bridge: ^1.31.0
+  flutter_rust_bridge: ^1.37.1
 
 dev_dependencies:
   flutter_test:
