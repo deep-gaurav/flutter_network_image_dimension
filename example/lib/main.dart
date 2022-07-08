@@ -35,8 +35,8 @@ class _MyAppState extends State<MyApp> {
                   'https://akudo-tech.imgix.net/offers/myntra_large_1785332b56f48a67.png'))
           .width
           .toString();
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+    } catch (e) {
+      platformVersion = '$e';
     }
 
     // If the widget was removed from the tree while the asynchronous platform
