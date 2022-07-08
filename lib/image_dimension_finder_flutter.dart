@@ -22,30 +22,40 @@ class ImageDimensionFinderFlutter {
   ImageDimensionFinderFlutter._internal() {
     if (_dimensionFetcherLibImpl.value == null) {
       late final DynamicLibrary lib;
-      if (Platform.isAndroid) {
-        lib = DynamicLibrary.open("libimage_dimension_fetcher_lib.so");
-      } else {
-        lib = DynamicLibrary.process();
+      try {
+        if (Platform.isAndroid) {
+          lib = DynamicLibrary.open("libimage_dimension_fetcher_lib.so");
+        } else {
+          lib = DynamicLibrary.process();
+        }
+        _dimensionFetcherLibImpl.value = ImageDimensionFetcherLibImpl(lib);
+      } catch (e) {
+        _dimensionFetcherLibImpl.value = null;
       }
-      _dimensionFetcherLibImpl.value = ImageDimensionFetcherLibImpl(lib);
     }
-    Timer.run(() async {
-      while (true) {
-        await Future.delayed(const Duration(milliseconds: 50));
-        for (var key in queue.keys) {
-          if (queue[key]?.isCompleted == false) {
-            try {
-              var dim = await _dimensionFetcherLibImpl.value?.getDim(url: key);
-              queue[key]?.complete(dim);
-            } catch (e) {
-              queue[key]?.completeError(e);
+    if (_dimensionFetcherLibImpl.value != null) {
+      Timer.run(() async {
+        while (true) {
+          await Future.delayed(const Duration(milliseconds: 50));
+          for (var key in queue.keys) {
+            if (queue[key]?.isCompleted == false) {
+              try {
+                var dim =
+                    await _dimensionFetcherLibImpl.value?.getDim(url: key);
+                queue[key]?.complete(dim);
+              } catch (e) {
+                queue[key]?.completeError(e);
+              }
             }
           }
         }
-      }
-    });
+      });
+    }
   }
   Future<ImageDimension> getDim({required String url}) async {
+    if (_dimensionFetcherLibImpl.value == null) {
+      throw "Dimension Fetcher Disabled";
+    }
     if (queue[url] == null) {
       queue[url] = Completer();
     }
