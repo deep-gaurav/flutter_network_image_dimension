@@ -20,25 +20,35 @@ class ImageDimensionFinderFlutter {
   Map<String, Completer<ImageDimension>> queue = {};
 
   ImageDimensionFinderFlutter._internal() {
+    var error;
     if (_dimensionFetcherLibImpl.value == null) {
-      late final DynamicLibrary lib;
-      if (Platform.isAndroid) {
-        lib = DynamicLibrary.open("libimage_dimension_fetcher_lib.so");
-      } else {
-        lib = DynamicLibrary.process();
+      try {
+        late final DynamicLibrary lib;
+        if (Platform.isAndroid) {
+          lib = DynamicLibrary.open("libimage_dimension_fetcher_lib.so");
+        } else {
+          lib = DynamicLibrary.process();
+        }
+        _dimensionFetcherLibImpl.value = ImageDimensionFetcherLibImpl(lib);
+      } catch (e) {
+        error = e;
       }
-      _dimensionFetcherLibImpl.value = ImageDimensionFetcherLibImpl(lib);
     }
     Timer.run(() async {
       while (true) {
         await Future.delayed(const Duration(milliseconds: 50));
         for (var key in queue.keys) {
           if (queue[key]?.isCompleted == false) {
-            try {
-              var dim = await _dimensionFetcherLibImpl.value?.getDim(url: key);
-              queue[key]?.complete(dim);
-            } catch (e) {
-              queue[key]?.completeError(e);
+            if (_dimensionFetcherLibImpl.value == null && error != null) {
+              queue[key]?.completeError(error);
+            } else {
+              try {
+                var dim =
+                    await _dimensionFetcherLibImpl.value?.getDim(url: key);
+                queue[key]?.complete(dim);
+              } catch (e) {
+                queue[key]?.completeError(e);
+              }
             }
           }
         }
