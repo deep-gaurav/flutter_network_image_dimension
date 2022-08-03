@@ -37,7 +37,7 @@ class ImageDimensionFinderFlutter {
     Timer.run(() async {
       while (true) {
         await Future.delayed(const Duration(milliseconds: 50));
-        for (var key in queue.keys) {
+        for (var key in queue.keys.toList()) {
           if (queue[key]?.isCompleted == false) {
             if (_dimensionFetcherLibImpl.value == null && error != null) {
               queue[key]?.completeError(error);
