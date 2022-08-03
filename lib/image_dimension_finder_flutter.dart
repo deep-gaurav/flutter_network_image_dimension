@@ -36,30 +36,26 @@ class ImageDimensionFinderFlutter {
     }
   }
 
-  processDimensions() async {
-    for (var key in queue.keys.toList()) {
-      if (queue[key]?.isCompleted == false) {
-        if (_dimensionFetcherLibImpl.value == null && error != null) {
-          queue[key]?.completeError(error);
-        } else {
-          try {
-            var dim = await _dimensionFetcherLibImpl.value?.getDim(url: key);
-            queue[key]?.complete(dim);
-          } catch (e) {
-            queue[key]?.completeError(e);
-          }
-        }
-      }
-    }
-  }
-
   Future<ImageDimension> getDim(
       {required String url,
       Duration timeout = const Duration(seconds: 2)}) async {
     if (queue[url] == null) {
       queue[url] = Completer();
+      if (_dimensionFetcherLibImpl.value == null && error != null) {
+        queue[url]?.completeError(error);
+      } else {
+        try {
+          _dimensionFetcherLibImpl.value
+              ?.getDim(url: url)
+              .then((dim) => queue[url]?.complete(dim))
+              .catchError((error) {
+            queue[url]?.completeError(error);
+          });
+        } catch (e) {
+          queue[url]?.completeError(e);
+        }
+      }
     }
-    processDimensions();
     var future = queue[url]!.future;
     future = future.timeout(timeout);
     return future;
